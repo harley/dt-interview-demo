@@ -4,12 +4,19 @@ app.controller('HomeCtrl', function($scope, $http){
   $scope.fromServer = "http://annotateit.org/api/search";
   $scope.toServer = "http://dt-interview.herokuapp.com/annotations";
 
+  $scope.pager = {};
+  $scope.pager.currentPage = 1;
+  $scope.pager.perPage = 20;
+  /* if you see this loadingMessage for some time, Internet is slow or not working */
+  $scope.loadingMessage = null;
+
   /* deep watch $scope.items by setting 3rd arg to true */
   $scope.$watch('items', function(newVal, oldVal){
     $scope.setCounters(newVal);
   }, true);
 
   $scope.loadRows = function(server) {
+    $scope.loadingMessage = "Loading data from  " + server;
     console.log('loading data', server);
     $http.get(server)
       .success(function(data, status){
@@ -18,13 +25,19 @@ app.controller('HomeCtrl', function($scope, $http){
         } else {
           $scope.items = data;
         }
-
+        if (data.total) {
+          $scope.total = data.total;
+        } else {
+          $scope.total = $scope.items.length;
+        }
         if ($scope.items) {
           $scope.checkItemDestinations();
         }
+        $scope.loadingMessage = null;
       })
       .error(function(data, status) {
         alert('Error loading data. Status ' + status);
+        $scope.loadingMessage = null;
       });
   };
 
@@ -38,6 +51,7 @@ app.controller('HomeCtrl', function($scope, $http){
   };
 
   $scope.checkItemDestinations = function() {
+    $scope.loadingMessage = "Checking for existence on the 2nd server..."
     angular.forEach($scope.items, function(item, index) {
       url = $scope.itemDestinationUrl($scope.toServer, item);
       console.log('check item destinations from', url);
@@ -49,6 +63,7 @@ app.controller('HomeCtrl', function($scope, $http){
           item.exist = false;
         });
     });
+    $scope.loadingMessage = null;
   };
 
   $scope.saveItemToDest = function(toServer, item) {
@@ -62,7 +77,7 @@ app.controller('HomeCtrl', function($scope, $http){
       .error(function(data, status){
         console.log('[Error] saving failed.');
       });
-  }
+  };
 
   $scope.deleteItemFromDest = function(toServer, item) {
     url = toServer + '/' + item.id;
@@ -112,5 +127,36 @@ app.controller('HomeCtrl', function($scope, $http){
     }
   };
 
-  $scope.loadRows($scope.fromServer);
+  $scope.nextPage = function(fromServer, pager) {
+    pager.currentPage = pager.currentPage + 1;
+    $scope.goToPage(fromServer, pager)
+  }
+
+  $scope.previousPage = function(fromServer, pager) {
+    pager.currentPage = pager.currentPage - 1;
+    $scope.goToPage(fromServer, pager)
+  }
+
+  $scope.getPageUrl = function(basicUrl, pager) {
+    limit = parseInt(pager.perPage);
+    currentPage = parseInt(pager.currentPage);
+    offset = (currentPage - 1) * limit;
+    $scope.currentPageInfo = "from " + (offset + 1) + " to " + (offset + limit);
+
+    var sep = '?';
+    if (basicUrl.match(/\?/)) {
+      sep = '&';
+    }
+    fullUrl = basicUrl + sep + 'offset=' + offset + '&limit=' + limit;
+
+    return fullUrl;
+  }
+
+  $scope.goToPage = function(fromServer, pager) {
+    console.log('next page is ', fromServer);
+    url = $scope.getPageUrl(fromServer, pager);
+    $scope.loadRows(url);
+  }
+
+  $scope.goToPage($scope.fromServer, $scope.pager);
 });
