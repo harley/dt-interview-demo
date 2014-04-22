@@ -6,6 +6,12 @@
     <script src="/vendor/angular.min.js"></script>
     <script src="/app.js"></script>
     <title>Index</title>
+    <style type="text/css" media="all">
+      .number_field {
+        font-size: .9em;
+        width: 50px;
+      }
+    </style>
   </head>
 
   <body ng-app="myApp" ng-controller="HomeCtrl">
@@ -18,10 +24,10 @@
           </div>
           <input type="text" ng-model="fromServer" class="form-control">
           <span class="input-group-addon">
-            Page <input type="text" ng-model="pager.currentPage" style="width:40px"/>
+            Page <input type="number" ng-model="pager.currentPage" class="number_field" />
           </span>
           <div class="input-group-addon">
-            <input type="text" ng-model="pager.perPage" style="width:40px"/> per page
+            <input type="number" ng-model="pager.perPage" class="number_field" /> per page
           </div>
         </div>
       </div>
@@ -38,17 +44,21 @@
 
     <div class="container">
       <ul class="pager">
-        <li><a href="" ng-click="previousPage(fromServer, pager)">Previous</a></li>
+        <li ng-class="{disabled: (pager.currentPage <= 1)}">
+          <a href="" ng-click="previousPage(fromServer, pager)">Previous</a>
+        </li>
         <li>
-          Page {{pager.currentPage}} with <input type="number" ng-model="pager.perPage" style="width:40px"/> per page
+          Page {{pager.currentPage}} with <input type="number" ng-model="pager.perPage" class="number_field" /> per page
 
         </li>
-        <li><a href="" ng-click="nextPage(fromServer, pager)">Next</a></li>
+        <li ng-class="{disabled: (items.length < pager.perPage)}">
+          <a href="" ng-click="nextPage(fromServer, pager)">Next</a>
+        </li>
       </ul>
-      <button ng-click="deleteExistingItems(toServer, items)" class="btn btn-sm btn-default">
+      <button ng-click="deleteExistingItems(toServer, items)" class="btn btn-sm btn-default" ng-disabled="countOfExisting == 0">
         Delete All <span class="badge badge-important">{{countOfExisting}}</span>
       </button>
-      <button ng-click="saveNewItems(toServer, items)" class="btn btn-sm btn-default">
+      <button ng-click="saveNewItems(toServer, items)" class="btn btn-sm btn-default" ng-disabled="countOfNew == 0">
         Save All <span class="badge badge-info">{{countOfNew}}</span>
       </button>
       <strong>{{loadingMessage}}</strong>
