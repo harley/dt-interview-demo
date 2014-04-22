@@ -2,8 +2,8 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"/>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.15/angular.min.js"></script>
+    <link rel="stylesheet" href="/vendor/bootstrap.min.css"/>
+    <script src="/vendor/angular.min.js"></script>
     <script src="/app.js"></script>
     <title>Index</title>
   </head>
@@ -29,7 +29,15 @@
       </div>
     </div>
 
-    <h4>Total: {{rows.length}}</h4>
+    <div class="container">
+      <h4>Total: {{items.length}}</h4>
+      <button ng-click="deleteExistingItems(toServer, items)" class="btn btn-sm btn-default">
+        Delete All <span class="badge badge-important">{{countOfExisting}}</span>
+      </button>
+      <button ng-click="saveNewItems(toServer, items)" class="btn btn-sm btn-default">
+        Save All <span class="badge badge-info">{{countOfNew}}</span>
+      </button>
+    </div>
     <table border="0" class="table">
       <thead>
         <tr>
@@ -40,11 +48,11 @@
           <th>Quote</th>
           <th>Id</th>
           <th>Action</th>
-          <th>debug</th>
+          <th ng-if="debug">debug</th>
         </tr>
       </thead>
       <tbody>
-        <tr ng-repeat="item in rows">
+        <tr ng-repeat="item in items">
           <td>{{item.uri}}</td>
           <td>{{item.user}}</td>
           <td>{{item.text}}</td>
@@ -55,7 +63,7 @@
             <button ng-show="item.exist" ng-click="deleteItemFromDest(toServer, item)" class="btn-xs btn btn-danger">Delete</button>
             <button ng-show="!item.exist" ng-click="saveItemToDest(toServer, item)" class="btn-xs btn btn-default">Save</button>
           </td>
-          <td><textarea>{{item}}</textarea></td>
+          <td ng-if="debug"><textarea>{{item}}</textarea></td>
         </tr>
       </tbody>
     </table>

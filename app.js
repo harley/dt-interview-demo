@@ -4,17 +4,22 @@ app.controller('HomeCtrl', function($scope, $http){
   $scope.fromServer = "http://annotateit.org/api/search";
   $scope.toServer = "http://dt-interview.herokuapp.com/annotations";
 
+  /* deep watch $scope.items by setting 3rd arg to true */
+  $scope.$watch('items', function(newVal, oldVal){
+    $scope.setCounters(newVal);
+  }, true);
+
   $scope.loadRows = function(server) {
     console.log('loading data', server);
     $http.get(server)
       .success(function(data, status){
         if (data.rows) {
-          $scope.rows = data.rows;
+          $scope.items = data.rows;
         } else {
-          $scope.rows = data;
+          $scope.items = data;
         }
 
-        if ($scope.rows) {
+        if ($scope.items) {
           $scope.checkItemDestinations();
         }
       })
@@ -33,7 +38,7 @@ app.controller('HomeCtrl', function($scope, $http){
   };
 
   $scope.checkItemDestinations = function() {
-    angular.forEach($scope.rows, function(item, index) {
+    angular.forEach($scope.items, function(item, index) {
       url = $scope.itemDestinationUrl($scope.toServer, item);
       console.log('check item destinations from', url);
       $http.get(url)
@@ -51,6 +56,8 @@ app.controller('HomeCtrl', function($scope, $http){
       .success(function(data, status){
         console.log('saved successfully');
         item.exist = true;
+        // $scope.countOfExisting = $scope.countOfExisting + 1;
+        // $scope.countOfNew = $scope.countOfNew - 1;
       })
       .error(function(data, status){
         console.log('[Error] saving failed.');
@@ -62,12 +69,48 @@ app.controller('HomeCtrl', function($scope, $http){
     $http.delete(url)
       .success(function(data, status){
         item.exist = false;
+        // $scope.countOfExisting = $scope.countOfExisting - 1;
+        // $scope.countOfNew = $scope.countOfNew + 1;
         console.log('deleting successfully');
       })
       .error(function(data, status){
         console.log('[Error] deleting failed.')
       });
   }
+
+  $scope.deleteExistingItems = function(toServer, items) {
+    angular.forEach(items, function(item, index){
+      if (item.exist) {
+        $scope.deleteItemFromDest(toServer, item);
+      }
+    });
+  }
+
+  $scope.countExistingItems = function(items) {
+    return items.reduce(function(total, item){
+      if (item.exist) {
+        return total + 1;
+      } else {
+        return total;
+      }
+    }, 0);
+  };
+
+  $scope.saveNewItems = function(toServer, items) {
+    angular.forEach(items, function(item, index) {
+      if (!item.exist) {
+        $scope.saveItemToDest(toServer, item);
+      }
+    });
+  };
+
+  $scope.setCounters = function(vals){
+    console.log('setting counters', vals);
+    if(vals) {
+      $scope.countOfExisting = $scope.countExistingItems(vals);
+      $scope.countOfNew = vals.length - $scope.countOfExisting;
+    }
+  };
 
   $scope.loadRows($scope.fromServer);
 });
