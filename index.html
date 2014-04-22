@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"/>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.15/angular.min.js"></script>
+    <script src="/app.js"></script>
+    <title>Index</title>
+  </head>
+
+  <body ng-app="myApp" ng-controller="HomeCtrl">
+    <div class="container">
+      <h3>Data Synchronizer</h3>
+      <div class="form-group">
+        <div class="input-group">
+          <div class="input-group-btn">
+            <button id="loader" type="submit" ng-click="loadRows(fromServer)" class="btn btn-primary">Click to reload from</button>
+          </div>
+          <input type="text" ng-model="fromServer" class="form-control">
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="input-group">
+          <div class="input-group-addon">
+            To
+          </div>
+          <input type="text" ng-model="toServer" class="form-control">
+        </div>
+      </div>
+    </div>
+
+    <h4>Total: {{rows.length}}</h4>
+    <table border="0" class="table">
+      <thead>
+        <tr>
+          <th>URI</th>
+          <th>User</th>
+          <th>Text</th>
+          <th>Consumer</th>
+          <th>Quote</th>
+          <th>Id</th>
+          <th>Action</th>
+          <th>debug</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="item in rows">
+          <td>{{item.uri}}</td>
+          <td>{{item.user}}</td>
+          <td>{{item.text}}</td>
+          <td>{{item.consumer}}</td>
+          <td>{{item.quote}}</td>
+          <td><a ng-href="{{itemUrl(fromServer, item)}}" target="_blank">{{item.id}}</a></td>
+          <td>
+            <button ng-show="item.exist" ng-click="deleteItemFromDest(toServer, item)" class="btn-xs btn btn-danger">Delete</button>
+            <button ng-show="!item.exist" ng-click="saveItemToDest(toServer, item)" class="btn-xs btn btn-default">Save</button>
+          </td>
+          <td><textarea>{{item}}</textarea></td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>
